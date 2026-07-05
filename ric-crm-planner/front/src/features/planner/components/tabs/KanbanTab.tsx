@@ -1,10 +1,23 @@
-import { useMemo, useState, type CSSProperties, type ComponentProps, type DragEvent } from "react";
+import {
+  useMemo,
+  useState,
+  type CSSProperties,
+  type ComponentProps,
+  type DragEvent,
+} from "react";
 import { Kanban, type BoardData } from "react-kanban-kit";
-import type { PlannerSubtask } from "../../../../types/planner";
-import AppButton from "../../../../components/UI/Button";
-import AppInput from "../../../../components/UI/Input";
-import { Card, Flex, Select, Space, Statistic, Typography } from "antd";
-import { FilterOutlined } from "@ant-design/icons";
+import type { PlannerSubtask, PlannerTeam } from "../../../../types/planner";
+import {
+  Button,
+  Card,
+  Flex,
+  Input,
+  Select,
+  Space,
+  Statistic,
+  Typography,
+} from "antd";
+import { FilterOutlined, TeamOutlined } from "@ant-design/icons";
 import {
   COLUMN_DRAG_TYPE,
   ROOT_ID,
@@ -28,7 +41,11 @@ type KanbanTabProps = {
   columns: string[];
   filteredSubtasks: PlannerSubtask[];
   assigneeFilter: string;
-  assigneeFilterOptions: Array<{ value: string; label: string; disabled?: boolean }>;
+  assigneeFilterOptions: Array<{
+    value: string;
+    label: string;
+    disabled?: boolean;
+  }>;
   onAssigneeFilterChange: (value: string) => void;
   canEditTeam: (teamId: number) => boolean;
   displayAssigneeLabel: (id: number) => string;
@@ -39,6 +56,10 @@ type KanbanTabProps = {
   onOpenTaskCard: (type: "parent" | "subtask", id: number) => void;
   onMoveSubtask: (subtaskId: number, column: string, position: number) => void;
   onMoveColumn: (sourceTitle: string, targetTitle: string) => void;
+
+  visibleTeams: PlannerTeam[];
+  teamFilter: string;
+  onTeamFilterChange: (value: string) => void;
 };
 
 export default function KanbanTab({
@@ -58,6 +79,9 @@ export default function KanbanTab({
   onOpenTaskCard,
   onMoveSubtask,
   onMoveColumn,
+  visibleTeams,
+  teamFilter,
+  onTeamFilterChange,
 }: KanbanTabProps) {
   const [draggingColumn, setDraggingColumn] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
@@ -90,7 +114,9 @@ export default function KanbanTab({
     filteredSubtasks
       .filter((subtask) => subtask.inSprint)
       .forEach((subtask) => {
-        const columnTitle = columns.includes(subtask.status) ? subtask.status : columns[0];
+        const columnTitle = columns.includes(subtask.status)
+          ? subtask.status
+          : columns[0];
         if (!columnTitle) return;
 
         const columnId = getColumnId(columnTitle);
@@ -102,7 +128,9 @@ export default function KanbanTab({
           children: [],
           totalChildrenCount: 0,
           type: "card",
-          isDraggable: canEditTeam(subtask.teamId) || Number(subtask.assigneeId) === Number(currentUserId),
+          isDraggable:
+            canEditTeam(subtask.teamId) ||
+            Number(subtask.assigneeId) === Number(currentUserId),
           content: { subtask } satisfies KanbanCardContent,
         };
         source[columnId]?.children.push(cardId);
@@ -122,10 +150,16 @@ export default function KanbanTab({
     () => ({
       card: {
         isDraggable: true,
-        render: ({ data, isDraggable }) => renderSubtaskCard(data, isDraggable, displayAssigneeLabel, currentUserId),
+        render: ({ data, isDraggable }) =>
+          renderSubtaskCard(
+            data,
+            isDraggable,
+            displayAssigneeLabel,
+            currentUserId,
+          ),
       },
     }),
-    [currentUserId, displayAssigneeLabel]
+    [currentUserId, displayAssigneeLabel],
   );
 
   const handleCardMove = (move: CardMove) => {
@@ -140,14 +174,20 @@ export default function KanbanTab({
     setDragOverColumn(null);
   };
 
-  const handleColumnDragStart = (event: DragEvent<HTMLDivElement>, title: string) => {
+  const handleColumnDragStart = (
+    event: DragEvent<HTMLDivElement>,
+    title: string,
+  ) => {
     event.stopPropagation();
     setDraggingColumn(title);
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData(COLUMN_DRAG_TYPE, title);
   };
 
-  const handleColumnDragOver = (event: DragEvent<HTMLDivElement>, title: string) => {
+  const handleColumnDragOver = (
+    event: DragEvent<HTMLDivElement>,
+    title: string,
+  ) => {
     if (!draggingColumn || draggingColumn === title) return;
     event.preventDefault();
     event.stopPropagation();
@@ -155,10 +195,14 @@ export default function KanbanTab({
     if (dragOverColumn !== title) setDragOverColumn(title);
   };
 
-  const handleColumnDrop = (event: DragEvent<HTMLDivElement>, title: string) => {
+  const handleColumnDrop = (
+    event: DragEvent<HTMLDivElement>,
+    title: string,
+  ) => {
     event.preventDefault();
     event.stopPropagation();
-    const sourceTitle = draggingColumn || event.dataTransfer.getData(COLUMN_DRAG_TYPE);
+    const sourceTitle =
+      draggingColumn || event.dataTransfer.getData(COLUMN_DRAG_TYPE);
     if (sourceTitle && sourceTitle !== title) onMoveColumn(sourceTitle, title);
     resetColumnDrag();
   };
@@ -175,21 +219,34 @@ export default function KanbanTab({
           </Space>
           <Space size={[12, 12]} wrap>
             <Statistic title="Колонки" value={columns.length} />
-            <Statistic title="Задачи в спринте" value={filteredSubtasks.filter((subtask) => subtask.inSprint).length} />
+            <Statistic
+              title="Задачи в спринте"
+              value={
+                filteredSubtasks.filter((subtask) => subtask.inSprint).length
+              }
+            />
           </Space>
         </Flex>
-
-        <Flex style={{ marginTop: 16 }} gap={12} wrap>
-          <Flex flex="1 1 340px" vertical>
-            <span>Новый статус</span>
-            <Space.Compact block>
-              <AppInput value={newColumn} onChange={(event) => onNewColumnChange(event.target.value)} placeholder="Новый статус" />
-              <AppButton className="primary" onClick={onAddColumn}>
-                Добавить
-              </AppButton>
-            </Space.Compact>
+        <Flex style={{ marginTop: 16 }} gap={12}>
+          <Flex style={{ width: "50%" }} vertical>
+            <span>
+              <TeamOutlined /> Команда
+            </span>
+            <Select
+              size="large"
+              value={teamFilter || ""}
+              onChange={(value) => onTeamFilterChange(String(value))}
+              options={
+                visibleTeams.length === 0
+                  ? [{ value: "", label: "Нет команд" }]
+                  : visibleTeams.map((team) => ({
+                      value: String(team.id),
+                      label: team.name,
+                    }))
+              }
+            />
           </Flex>
-          <Flex flex="1 1 340px" vertical>
+          <Flex style={{ width: "50%" }} vertical>
             <span>
               <FilterOutlined /> Исполнитель
             </span>
@@ -200,6 +257,18 @@ export default function KanbanTab({
               options={assigneeFilterOptions}
             />
           </Flex>
+        </Flex>
+        <Flex style={{width:'25%', marginTop: 16}}>
+          <Space.Compact block>
+            <Input
+              value={newColumn}
+              onChange={(event) => onNewColumnChange(event.target.value)}
+              placeholder="Новый статус"
+            />
+            <Button onClick={onAddColumn}>
+              Добавить
+            </Button>
+          </Space.Compact>
         </Flex>
       </Card>
 
@@ -214,13 +283,22 @@ export default function KanbanTab({
         allowListFooter={() => true}
         renderListFooter={(column) => {
           const isEmpty = column.totalChildrenCount === 0;
-          return <div className={`kanban-drop-area ${isEmpty ? "is-empty" : ""}`}>{isEmpty ? "Нет задач в спринте" : "Перетащите карточку сюда"}</div>;
+          return (
+            <div className={`kanban-drop-area ${isEmpty ? "is-empty" : ""}`}>
+              {isEmpty ? "Нет задач в спринте" : "Перетащите карточку сюда"}
+            </div>
+          );
         }}
         renderColumnHeader={(column) => {
           const title = getColumnTitle(column);
-          const columnIndex = columns.findIndex((columnTitle) => columnTitle === title);
+          const columnIndex = columns.findIndex(
+            (columnTitle) => columnTitle === title,
+          );
           const style = {
-            "--kanban-column-accent": getColumnTheme(title, Math.max(columnIndex, 0)),
+            "--kanban-column-accent": getColumnTheme(
+              title,
+              Math.max(columnIndex, 0),
+            ),
           } as CSSProperties;
           const titleClassName = [
             "kanban-column-title",
@@ -248,12 +326,13 @@ export default function KanbanTab({
                 <span>{title}</span>
               </span>
               <div className="kanban-column-actions">
-                <span className="kanban-column-count">{column.totalChildrenCount}</span>
+                <span className="kanban-column-count">
+                  {column.totalChildrenCount}
+                </span>
                 <span className="kanban-column-drag-hint" aria-hidden="true">
                   {"↔"}
                 </span>
-                <AppButton
-                  type="button"
+                <Button
                   className="kanban-column-remove"
                   draggable={false}
                   onPointerDown={(event) => event.stopPropagation()}
@@ -265,12 +344,20 @@ export default function KanbanTab({
                   aria-label="Удалить колонку"
                 >
                   {"×"}
-                </AppButton>
+                </Button>
               </div>
             </div>
           );
         }}
-        renderCardDragPreview={(card) => renderSubtaskCard(card, true, displayAssigneeLabel, currentUserId, "drag-preview")}
+        renderCardDragPreview={(card) =>
+          renderSubtaskCard(
+            card,
+            true,
+            displayAssigneeLabel,
+            currentUserId,
+            "drag-preview",
+          )
+        }
         onCardClick={(event, card) => {
           event.stopPropagation();
           const subtaskId = getSubtaskIdFromCardId(card.id);
@@ -282,4 +369,3 @@ export default function KanbanTab({
     </div>
   );
 }
-
