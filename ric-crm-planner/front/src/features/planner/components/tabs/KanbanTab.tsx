@@ -3,7 +3,8 @@ import { Kanban, type BoardData } from "react-kanban-kit";
 import type { PlannerSubtask } from "../../../../types/planner";
 import AppButton from "../../../../components/UI/Button";
 import AppInput from "../../../../components/UI/Input";
-import AppSelect from "../../../../components/UI/Select";
+import { Card, Flex, Select, Space, Statistic, Typography } from "antd";
+import { FilterOutlined } from "@ant-design/icons";
 import {
   COLUMN_DRAG_TYPE,
   ROOT_ID,
@@ -19,7 +20,10 @@ import {
 
 type ReactKanbanProps = ComponentProps<typeof Kanban>;
 type CardMove = Parameters<NonNullable<ReactKanbanProps["onCardMove"]>>[0];
+
+const { Text, Title } = Typography;
 type KanbanTabProps = {
+  activeTeamName: string;
   newColumn: string;
   columns: string[];
   filteredSubtasks: PlannerSubtask[];
@@ -38,6 +42,7 @@ type KanbanTabProps = {
 };
 
 export default function KanbanTab({
+  activeTeamName,
   newColumn,
   columns,
   filteredSubtasks,
@@ -159,25 +164,44 @@ export default function KanbanTab({
   };
 
   return (
-    <div className="planner-stack">
-      <div className="planner-card">
-        <div className="planner-inline-form kanban-toolbar">
-          <div className="kanban-column-form">
-            <AppInput value={newColumn} onChange={(event) => onNewColumnChange(event.target.value)} placeholder="Новый статус" />
-            <AppButton className="primary" onClick={onAddColumn}>
-              Добавить
-            </AppButton>
-          </div>
-          <div className="kanban-assignee-filter">
-            <span>Исполнитель</span>
-            <AppSelect
+    <div className="planner-stack backlog-tab">
+      <Card className="planner-card backlog-hero">
+        <Flex justify="space-between" gap={16} wrap align="center">
+          <Space vertical size={4}>
+            <Text className="teams-eyebrow">Канбан команды</Text>
+            <Title level={3} className="backlog-title">
+              {activeTeamName || "Выберите команду"}
+            </Title>
+          </Space>
+          <Space size={[12, 12]} wrap>
+            <Statistic title="Колонки" value={columns.length} />
+            <Statistic title="Задачи в спринте" value={filteredSubtasks.filter((subtask) => subtask.inSprint).length} />
+          </Space>
+        </Flex>
+
+        <Flex style={{ marginTop: 16 }} gap={12} wrap>
+          <Flex flex="1 1 340px" vertical>
+            <span>Новый статус</span>
+            <Space.Compact block>
+              <AppInput value={newColumn} onChange={(event) => onNewColumnChange(event.target.value)} placeholder="Новый статус" />
+              <AppButton className="primary" onClick={onAddColumn}>
+                Добавить
+              </AppButton>
+            </Space.Compact>
+          </Flex>
+          <Flex flex="1 1 340px" vertical>
+            <span>
+              <FilterOutlined /> Исполнитель
+            </span>
+            <Select
+              size="large"
               value={assigneeFilter}
               onChange={(value) => onAssigneeFilterChange(String(value))}
               options={assigneeFilterOptions}
             />
-          </div>
-        </div>
-      </div>
+          </Flex>
+        </Flex>
+      </Card>
 
       <Kanban
         dataSource={dataSource}

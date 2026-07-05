@@ -15,7 +15,7 @@ import type {
 import { isDoneKanbanStatus } from "../../planner.utils";
 import "gantt-task-react/dist/index.css";
 import AppButton from "../../../../components/UI/Button";
-import { Button } from "antd";
+import { Button, Card, Flex, Space, Statistic, Typography } from "antd";
 
 type PlannerGanttTask = Task & {
   plannerType: "parent" | "subtask";
@@ -33,6 +33,8 @@ type GanttTabProps = {
   displayAssigneeLabel: (id: number) => string;
   onOpenTaskCard: (type: "parent" | "subtask", id: number) => void;
 };
+
+const { Text, Title } = Typography;
 
 const viewModes = [
   { id: ViewMode.Day, label: "День" },
@@ -560,15 +562,26 @@ export default function GanttTab({
   );
 
   return (
-    <div className="planner-card planner-gantt-card">
+    <div className="planner-stack backlog-tab">
+      <Card className="planner-card backlog-hero">
+        <Flex justify="space-between" gap={16} wrap align="center">
+          <Space vertical size={4}>
+            <Text className="teams-eyebrow">Диаграмма Ганта команды</Text>
+            <Title level={3} className="backlog-title">
+              {activeTeamName || "Выберите команду"}
+            </Title>
+          </Space>
+          <Space size={[12, 12]} wrap>
+            <Statistic title="Большие задачи" value={parents.length} />
+            <Statistic title="Подзадачи" value={subtasks.length} />
+          </Space>
+        </Flex>
+      </Card>
+
+      <div className="planner-card planner-gantt-card">
       <div className="planner-gantt-head">
         <div className="planner-gantt-head__copy">
           <h3 className="h3">Диаграмма Ганта</h3>
-          {activeTeamName && (
-            <div className="planner-current-team">
-              Команда: {activeTeamName}
-            </div>
-          )}
         </div>
 
         <div className="planner-gantt-head__controls">
@@ -618,6 +631,7 @@ export default function GanttTab({
           />
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -1214,6 +1214,7 @@ export default function PlannerPage() {
 
       {!studentWaitingForConfirmedTeam && tab === "kanban" && (
         <KanbanTab
+          activeTeamName={activeTeam?.name || ""}
           newColumn={newColumn}
           columns={state.columns}
           filteredSubtasks={filteredSubtasks}
