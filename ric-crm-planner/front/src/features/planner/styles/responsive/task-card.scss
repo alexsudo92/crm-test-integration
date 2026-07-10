@@ -1,5 +1,16 @@
-@media (max-width: 720px) {
-  .planner-task-row {
+@media (max-width: 900px) {
+  .planner-task-card--bitrix {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .planner-task-row,
+  .planner-task-checklist__add {
+    grid-template-columns: 1fr;
+  }
+
+  .planner-task-input--title {
+    font-size: 20px;
   }
 }

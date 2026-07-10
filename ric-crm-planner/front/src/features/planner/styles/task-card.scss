@@ -1,7 +1,222 @@
+.planner-task-modal-body {
+  padding: 0;
+  background: transparent;
+}
+
 .planner-task-card {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.planner-task-card--bitrix {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 18px;
+  padding: 4px;
+  color: #172b4d;
+}
+
+.planner-task-card__main,
+.planner-task-card__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.planner-task-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.planner-task-field--title {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e8edf5;
+}
+
+.planner-task-field__label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #7a8ca5;
+  text-transform: uppercase;
+}
+
+.planner-task-input,
+.planner-task-textarea {
+  width: 100%;
+  border: 1px solid #d7e0ec;
+  border-radius: 8px;
+  background: #fff;
+  color: #172b4d;
+  font: inherit;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.planner-task-input {
+  min-height: 40px;
+  padding: 9px 12px;
+}
+
+.planner-task-input--title {
+  min-height: 48px;
+  padding: 10px 0;
+  border-color: transparent;
+  border-radius: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.planner-task-textarea {
+  min-height: 150px;
+  padding: 12px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.planner-task-input:focus,
+.planner-task-textarea:focus {
+  border-color: #2fc6f6;
+  box-shadow: 0 0 0 3px rgba(47, 198, 246, 0.16);
+}
+
+.planner-task-checklist,
+.planner-task-side-panel {
+  border: 1px solid #e4ebf4;
+  border-radius: 12px;
+  background: #f8fbff;
+  padding: 14px;
+}
+
+.planner-task-section-header,
+.planner-task-side-panel h3 {
+  margin: 0 0 12px;
+}
+
+.planner-task-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.planner-task-section-header h3,
+.planner-task-side-panel h3 {
+  margin: 0;
+  color: #172b4d;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.planner-task-section-header span {
+  display: block;
+  margin-top: 3px;
+  color: #7a8ca5;
+  font-size: 12px;
+}
+
+.planner-task-checklist__add {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.planner-task-checklist__add button,
+.planner-task-checklist__item button {
+  border: 1px solid #2fc6f6;
+  border-radius: 8px;
+  background: #fff;
+  color: #1497c4;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.planner-task-checklist__add button {
+  padding: 0 14px;
+}
+
+.planner-task-checklist__items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.planner-task-checklist__empty {
+  padding: 12px;
+  border: 1px dashed #c7d4e6;
+  border-radius: 8px;
+  color: #7a8ca5;
+  text-align: center;
+}
+
+.planner-task-checklist__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #e4ebf4;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.planner-task-checklist__item label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.planner-task-checklist__item input:checked + span {
+  color: #7a8ca5;
+  text-decoration: line-through;
+}
+
+.planner-task-checklist__item button {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border-color: #d7e0ec;
+  color: #7a8ca5;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.planner-task-side-panel {
+  background: #eef6ff;
+}
+
+.planner-task-side-panel .planner-task-field + .planner-task-field {
+  margin-top: 10px;
+}
+
+.planner-task-deadline-summary {
+  margin-top: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: #fff;
+  color: #526579;
+  font-size: 13px;
+}
+
+.planner-task-meta-row {
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+  border-top: 1px solid #dbe7f5;
+}
+
+.planner-task-meta-row span {
+  color: #7a8ca5;
+  font-size: 12px;
+}
+
+.planner-task-meta-row strong {
+  color: #172b4d;
+  font-size: 14px;
+  word-break: break-word;
 }
 
 .planner-task-row {
