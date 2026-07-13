@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import dayjs from "dayjs";
+import dayjs, { type Dayjs } from "dayjs";
 import type {
   PlannerParentTask,
   PlannerSubtask,
+  PlannerTaskChecklistItem,
   PlannerTeam,
 } from "../../../../types/planner";
 import {
@@ -29,38 +30,50 @@ type TaskCardModalProps = {
   displayAssigneeLabel: (id: number) => string;
   sourceLabelForTeam: (team: PlannerTeam) => string;
   onClose: () => void;
-};
-
-type ChecklistItem = {
-  id: number;
-  text: string;
-  completed: boolean;
+  onUpdateParentTask: (
+    taskId: number,
+    updates: Partial<Pick<PlannerParentTask, "title" | "description" | "checklist" | "startDate" | "endDate">>,
+  ) => void;
+  onUpdateSubtask: (
+    subtaskId: number,
+    updates: Partial<Pick<PlannerSubtask, "title" | "description" | "checklist" | "startDate" | "endDate">>,
+  ) => void;
 };
 
 export default function TaskCardModal({
   isOpen,
   taskCardParent,
   taskCardSubtask,
+  taskCardTeam,
+  taskCardParentForSubtask,
+  taskCardSubtasksCount,
+  displayAssigneeLabel,
+  sourceLabelForTeam,
   onClose,
+  onUpdateParentTask,
+  onUpdateSubtask,
 }: TaskCardModalProps) {
   const activeTask = taskCardSubtask || taskCardParent;
-  const parentDescription = taskCardParent?.description || "";
   const startDate = taskCardSubtask?.startDate || taskCardParent?.startDate;
   const endDate = taskCardSubtask?.endDate || taskCardParent?.endDate;
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [start, setStart] = useState<Dayjs | undefined>();
+  const [end, setEnd] = useState<Dayjs | undefined>();
   const [checklistInput, setChecklistInput] = useState("");
-  const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
+  const [checklist, setChecklist] = useState<PlannerTaskChecklistItem[]>([]);
 
   useEffect(() => {
     if (!isOpen || !activeTask) return;
 
     setTitle(activeTask.title || "");
-    setDescription(parentDescription);
+    setDescription(activeTask.description || "");
+    setStart(startDate ? dayjs(startDate) : undefined);
+    setEnd(endDate ? dayjs(endDate) : undefined);
     setChecklistInput("");
-    setChecklist([]);
-  }, [activeTask, isOpen, parentDescription]);
+    setChecklist(activeTask.checklist || []);
+  }, [activeTask, endDate, isOpen, startDate]);
 
   const addChecklistItem = () => {
     const text = checklistInput.trim();
@@ -86,8 +99,31 @@ export default function TaskCardModal({
     setChecklist((items) => items.filter((item) => item.id !== itemId));
   };
 
+  const saveTaskCard = () => {
+    if (!activeTask) {
+      onClose();
+      return;
+    }
+
+    const updates = {
+      title: title.trim() || activeTask.title,
+      description: description.trim(),
+      checklist,
+      startDate: start,
+      endDate: end,
+    };
+
+    if (taskCardSubtask) {
+      onUpdateSubtask(taskCardSubtask.id, updates);
+    } else if (taskCardParent) {
+      onUpdateParentTask(taskCardParent.id, updates);
+    }
+
+    onClose();
+  };
+
   return (
-    <Modal open={isOpen} onCancel={onClose} onOk={onClose}>
+    <Modal open={isOpen} onCancel={onClose} onOk={saveTaskCard} okText="Сохранить" cancelText="Отмена">
       {!activeTask ? (
         <Text>Задача не найдена.</Text>
       ) : (
@@ -103,6 +139,20 @@ export default function TaskCardModal({
             >
               {title}
             </Title>
+            {taskCardTeam && (
+              <Text type="secondary">
+                {taskCardTeam.name} · {sourceLabelForTeam(taskCardTeam)}
+              </Text>
+            )}
+            {taskCardParentForSubtask && (
+              <Text type="secondary">Большая задача: {taskCardParentForSubtask.title}</Text>
+            )}
+            {taskCardParent && (
+              <Text type="secondary">Подзадач: {taskCardSubtasksCount}</Text>
+            )}
+            {activeTask.assigneeId && (
+              <Text type="secondary">Исполнитель: {displayAssigneeLabel(activeTask.assigneeId)}</Text>
+            )}
           </Flex>
 
           <Flex vertical>
@@ -130,25 +180,24 @@ export default function TaskCardModal({
             </Flex>
 
             <Flex gap={4} vertical>
-              {checklist.length !== 0 &&
-                checklist.map((item) => (
-                  <Flex justify="space-between" align="center" key={item.id}>
-                    <Flex gap={4}>
-                      <Checkbox
-                        checked={item.completed}
-                        onChange={() => toggleChecklistItem(item.id)}
-                      />
-                      <Text>{item.text}</Text>
-                    </Flex>
-                    <Button
-                      variant="outlined"
-                      color="red"
-                      size="small"
-                      onClick={() => removeChecklistItem(item.id)}
-                      icon={<CloseOutlined />}
+              {checklist.map((item) => (
+                <Flex justify="space-between" align="center" key={item.id}>
+                  <Flex gap={4}>
+                    <Checkbox
+                      checked={item.completed}
+                      onChange={() => toggleChecklistItem(item.id)}
                     />
+                    <Text delete={item.completed}>{item.text}</Text>
                   </Flex>
-                ))}
+                  <Button
+                    variant="outlined"
+                    color="red"
+                    size="small"
+                    onClick={() => removeChecklistItem(item.id)}
+                    icon={<CloseOutlined />}
+                  />
+                </Flex>
+              ))}
             </Flex>
           </Flex>
 
@@ -158,7 +207,8 @@ export default function TaskCardModal({
               <Text>Начало</Text>
               <DatePicker
                 format="DD.MM.YYYY"
-                value={dayjs(startDate)}
+                value={start}
+                onChange={(value) => setStart(value ?? undefined)}
                 getPopupContainer={(node) => node.parentNode as HTMLElement}
               />
             </Flex>
@@ -166,7 +216,8 @@ export default function TaskCardModal({
               <Text>Крайний срок</Text>
               <DatePicker
                 format="DD.MM.YYYY"
-                value={dayjs(endDate)}
+                value={end}
+                onChange={(value) => setEnd(value ?? undefined)}
                 getPopupContainer={(node) => node.parentNode as HTMLElement}
               />
             </Flex>
