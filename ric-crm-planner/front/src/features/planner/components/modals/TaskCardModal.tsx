@@ -44,11 +44,7 @@ export default function TaskCardModal({
   isOpen,
   taskCardParent,
   taskCardSubtask,
-  taskCardTeam,
-  taskCardParentForSubtask,
-  taskCardSubtasksCount,
   displayAssigneeLabel,
-  sourceLabelForTeam,
   onClose,
   onUpdateParentTask,
   onUpdateSubtask,
@@ -127,7 +123,7 @@ export default function TaskCardModal({
       {!activeTask ? (
         <Text>Задача не найдена.</Text>
       ) : (
-        <Flex gap={12} vertical>
+        <Flex gap={16} vertical>
           <Flex vertical>
             <Title
               level={3}
@@ -139,17 +135,6 @@ export default function TaskCardModal({
             >
               {title}
             </Title>
-            {taskCardTeam && (
-              <Text type="secondary">
-                {taskCardTeam.name} · {sourceLabelForTeam(taskCardTeam)}
-              </Text>
-            )}
-            {taskCardParentForSubtask && (
-              <Text type="secondary">Большая задача: {taskCardParentForSubtask.title}</Text>
-            )}
-            {taskCardParent && (
-              <Text type="secondary">Подзадач: {taskCardSubtasksCount}</Text>
-            )}
             {activeTask.assigneeId && (
               <Text type="secondary">Исполнитель: {displayAssigneeLabel(activeTask.assigneeId)}</Text>
             )}
@@ -167,7 +152,7 @@ export default function TaskCardModal({
 
           <Flex gap={8} vertical>
             <Text>Чеклист</Text>
-            <Flex gap={12}>
+            <Flex gap={8}>
               <Input
                 value={checklistInput}
                 onChange={(event) => setChecklistInput(event.target.value)}
