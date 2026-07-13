@@ -43,6 +43,7 @@ export interface PlannerSubtask {
   endDate?: Dayjs;
   inSprint: boolean;
   status: string;
+  description?: string;
   createdBy?: number;
   updatedAt?: string;
 }
